@@ -1,0 +1,16 @@
+orig/
+build/
+.decomp-wtf/
+.decomp/
+.venv/
+__pycache__/
+*.pyc
+objdiff.json
+build.ninja
+.ninja_log
+.ninja_deps
+*.apk
+*.so
+*.o
+*.elf
+*.zip

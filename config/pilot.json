@@ -1,0 +1,58 @@
+{
+  "version": "2026.40.4",
+  "apk_sha256": "70cd395e4546299127a54b2274c4f281438e267b4326b405fe301a76bc7746e4",
+  "native_sha256": "4846616dd283b18b5cdeacea1a07f6a423762cad69152888b5ea35f18e9b7da4",
+  "metadata_sha256": "51b358008fa86808963502bc804c7b991a7956d398fb523897faf8086a68a4cf",
+  "ndk": "27.2.12479018",
+  "android_api": 25,
+  "compiler": "18.0.3",
+  "decomp_commit": "a8708d82246f869fddd1f9e98d4007397f31dea6",
+  "objdiff_version": "3.8.2",
+  "functions": [
+    {
+      "id": "ticks_to_seconds_float",
+      "symbol": "TicksToSecondsFloat",
+      "type": "Cosmorama.Frontend.Base.Fusion.TickHelper",
+      "signature": "System.Single TicksToSecondsFloat(System.Int32 ticks, Fusion.NetworkRunner runner)",
+      "rva": 60045728,
+      "size": 44,
+      "references": {
+        "NetworkRunner_get_DeltaTime": 62015780,
+        "raise_null": 58069852
+      },
+      "code_sha256": "45ef901248a4d34749509ddf5204eff3a91533f7e9cfd3f9d417de247c273d45",
+      "profile": "O2"
+    },
+    {
+      "id": "get_max_delta",
+      "symbol": "GetMaxDelta",
+      "type": "Cosmorama.TableTroopers.World.WeaponTypeSwitcher",
+      "signature": "System.Single GetMaxDelta(System.Single[][] startWeights, System.Int32 activeIndex)",
+      "rva": 59408980,
+      "size": 176,
+      "references": {
+        "raise_null": 58069852,
+        "raise_bounds": 58069860
+      },
+      "code_sha256": "33039a8ae58603bde9def5b6effda5398d3406b09330754475c13b3e2cd3e7da",
+      "profile": "Os"
+    },
+    {
+      "id": "water_update",
+      "symbol": "WaterUpdate",
+      "type": "Cosmorama.TableTroopers.World.WaterHandler",
+      "signature": "System.Void Update()",
+      "rva": 60456280,
+      "size": 224,
+      "references": {
+        "Time_get_time": 124515600,
+        "GameObject_get_transform": 124456896,
+        "Transform_get_localPosition": 124529388,
+        "Transform_set_localPosition": 124529584,
+        "raise_null": 58069852
+      },
+      "code_sha256": "cdac24e12443df92c920047cf8000c39a58283f76262db1b0b59219b5f7dcd2f",
+      "profile": "O2"
+    }
+  ]
+}

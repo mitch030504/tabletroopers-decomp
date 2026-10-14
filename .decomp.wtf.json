@@ -1,0 +1,4 @@
+{
+  "game": {"what": "Your TableTroopers 2026.40.4 APK (versionCode 212724703)", "path": "orig/TableTroopers.apk", "help": "Supply your own APK. configure.py checks SHA-256 of the APK, native library and IL2CPP metadata."},
+  "setup": [["python", "configure.py", "--apk", "orig/TableTroopers.apk"], ["ninja"]]
+}

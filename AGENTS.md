@@ -1,0 +1,3 @@
+# TableTroopers native pilot
+
+Read README.md and CONTRIBUTING.md. Target is only 2026.40.4. Work on one assigned function or tool defect; preserve all unresolved boundaries. Use ordinary C/C++ only, never inline assembly or embedded target bytes. Do not edit hashes, original RVAs, target objects, scripts or acceptance rules to manufacture matching. Re-run verification after shared-header changes. Matching bytes are distinct from runtime fidelity or whole-game completion. Keep raw inputs, credentials and generated game material out of Git. Do not start extra agents or spend paid credits; the external orchestrator owns model/effort/quota routing.
