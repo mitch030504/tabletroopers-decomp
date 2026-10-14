@@ -35,6 +35,13 @@ class MatchingTests(unittest.TestCase):
         self.assertEqual(m.attempt_stats(prior,11,False,True,'job')['non_improving_attempts'],0)
         self.assertEqual(m.attempt_stats(prior,10,False,False,'new-job')['non_improving_attempts'],0)
 
+    def test_failed_build_is_not_a_successful_ninja_target(self):
+        from unittest.mock import patch
+        import contextlib,io
+        with tempfile.TemporaryDirectory() as folder,patch.object(m,'build',return_value={'error':'synthetic compile error'}),patch.dict('os.environ',{'TT_MATCHING_BUILDER_URL':''}),patch('sys.argv',['matching.py','build','--function','ticks_to_seconds_float','--root',folder]),contextlib.redirect_stdout(io.StringIO()):
+            with self.assertRaises(SystemExit) as raised:m.main()
+            self.assertEqual(raised.exception.code,1)
+
     def test_wrong_apk_rejected_before_extracting(self):
         with tempfile.TemporaryDirectory() as folder:
             p=Path(folder)/'wrong.apk';p.write_bytes(b'not the game')

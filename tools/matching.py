@@ -177,6 +177,8 @@ def build(function_id,profile='O2',root=ROOT,ndk=None,count_attempt=True,job_id=
         raise ValueError('25 non-improving attempts reached; release this slice')
     flags=['--target=aarch64-linux-android25','-std=c++17','-'+profile,'-fPIC','-fomit-frame-pointer','-fno-stack-protector',
            '-fno-exceptions','-fno-rtti','-fno-math-errno','-ffp-contract=off','-ffunction-sections','-fno-unwind-tables','-fno-asynchronous-unwind-tables']
+    (root/'build/current'/f'{function_id}.o').unlink(missing_ok=True)
+    (folder/'display.o').unlink(missing_ok=True)
     result=subprocess.run([str(compiler),*flags,'-I',str(root/'include'),'-c',str(root/f'src/{function_id}.cpp'),'-o',str(folder/'compiled.o')],capture_output=True,text=True,timeout=60)
     if result.returncode:row['error']=result.stderr[-4000:]
     else:
@@ -255,5 +257,6 @@ def main():
                     dispatch(fn['id'],entry.get('profile',fn.get('profile','O2')),root,args.ndk,args.job_id,revalidate=True)
             output=report(root)
         print(json.dumps(output,indent=2))
+        if args.action=='build' and output.get('error'):raise SystemExit(1)
 
 if __name__=='__main__':main()
