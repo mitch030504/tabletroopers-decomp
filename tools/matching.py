@@ -157,6 +157,7 @@ def build(function_id,profile='O2',root=ROOT,ndk=None,count_attempt=True,job_id=
     compiler,linker=toolchain(ndk or os.environ.get('ANDROID_NDK_HOME',''))
     folder=root/'build'/function_id/profile;folder.mkdir(parents=True,exist_ok=True)
     target=Elf(native).bytes_at(function['rva'],function['size'],True)
+    if function['rva']%4 or function['size']%4 or hashlib.sha256(target).hexdigest()!=function['code_sha256']:raise ValueError('Pinned function boundary/bytes changed')
     row={'id':function_id,'status':'not_run','exact_match':False,'profile':profile,'source_sha256':source_hash,
          'target_sha256':cfg['apk_sha256'],'native_sha256':cfg['native_sha256'],'rva':function['rva'],'semantic_verification':False}
     state_path=root/'build/state.json'
@@ -201,6 +202,7 @@ def report(root=ROOT):
     state=json.loads((root/'build/state.json').read_text()) if (root/'build/state.json').exists() else {}
     functions=[{k:v for k,v in state.get(f['id'],{'id':f['id'],'status':'not_run','exact_match':False}).items() if k!='attempt_keys'} for f in cfg['functions']]
     for fn,row in zip(cfg['functions'],functions):
+        if not row.get('source_sha256'):continue
         files={f"src/{fn['id']}.cpp":(root/f"src/{fn['id']}.cpp").read_text(),'include/game.hpp':(root/'include/game.hpp').read_text()}
         current=hashlib.sha256(json.dumps(files,sort_keys=True).encode()).hexdigest()
         if row.get('source_sha256') and row['source_sha256']!=current:
