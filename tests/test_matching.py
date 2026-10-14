@@ -27,6 +27,14 @@ class MatchingTests(unittest.TestCase):
             with self.assertRaises(ValueError):m.policy(sources)
         m.policy({'src/a.cpp':'#include "game.hpp"\nfloat f(){return 1.0f;}','include/game.hpp':'#include <cstdint>'})
 
+    def test_duplicate_attempts_consume_budget_but_revalidation_does_not(self):
+        prior={'best_matching_bytes':10,'job_id':'job','attempts':0,'non_improving_attempts':0}
+        for _ in range(25):prior=m.attempt_stats(prior,10,False,True,'job')
+        self.assertEqual(prior['attempts'],25);self.assertEqual(prior['non_improving_attempts'],25)
+        self.assertEqual(m.attempt_stats(prior,10,False,False,'job'),prior)
+        self.assertEqual(m.attempt_stats(prior,11,False,True,'job')['non_improving_attempts'],0)
+        self.assertEqual(m.attempt_stats(prior,10,False,False,'new-job')['non_improving_attempts'],0)
+
     def test_wrong_apk_rejected_before_extracting(self):
         with tempfile.TemporaryDirectory() as folder:
             p=Path(folder)/'wrong.apk';p.write_bytes(b'not the game')

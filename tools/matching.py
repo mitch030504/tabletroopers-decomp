@@ -145,6 +145,14 @@ def compare(target,candidate):
             'first_mismatch':next((i for i in range(max(len(target),len(candidate))) if i>=min(len(target),len(candidate)) or target[i]!=candidate[i]),None)}
 
 
+def attempt_stats(prior,matching_bytes,exact,count_attempt,job_id):
+    best=prior.get('best_matching_bytes',-1)
+    failures=prior.get('non_improving_attempts',0) if prior.get('job_id')==job_id else 0
+    if count_attempt:failures=0 if matching_bytes>best or exact else failures+1
+    return {'attempts':prior.get('attempts',0)+int(count_attempt),'non_improving_attempts':failures,
+            'job_id':job_id,'best_matching_bytes':max(best,matching_bytes)}
+
+
 def build(function_id,profile='O2',root=ROOT,ndk=None,count_attempt=True,job_id='local'):
     root=Path(root);cfg=json.loads((root/'config/pilot.json').read_text())
     function=next((f for f in cfg['functions'] if f['id']==function_id),None)
@@ -165,7 +173,7 @@ def build(function_id,profile='O2',root=ROOT,ndk=None,count_attempt=True,job_id=
     prior=state.get(function_id,{})
     seen=prior.get('attempt_keys',[]);key=source_hash+profile
     failures=prior.get('non_improving_attempts',0) if prior.get('job_id')==job_id else 0
-    if count_attempt and key not in seen and failures>=25:
+    if count_attempt and failures>=25:
         raise ValueError('25 non-improving attempts reached; release this slice')
     flags=['--target=aarch64-linux-android25','-std=c++17','-'+profile,'-fPIC','-fomit-frame-pointer','-fno-stack-protector',
            '-fno-exceptions','-fno-rtti','-fno-math-errno','-ffp-contract=off','-ffunction-sections','-fno-unwind-tables','-fno-asynchronous-unwind-tables']
@@ -185,14 +193,8 @@ def build(function_id,profile='O2',root=ROOT,ndk=None,count_attempt=True,job_id=
             object_file(folder/'display.o',function['symbol'],candidate)
             # decomp.wtf builds this per-unit path; comparisons use post-link instructions.
             object_file(root/'build/current'/f'{function_id}.o',function['symbol'],candidate)
-    if count_attempt and key not in seen:
-        seen.append(key)
-        best=prior.get('best_matching_bytes',-1)
-        improved=row.get('matching_bytes',-1)>best or row['exact_match']
-        failures=0 if improved else failures+1
-    else:best=prior.get('best_matching_bytes',-1)
-    row.update(attempts=len(seen),attempt_keys=seen,non_improving_attempts=failures,job_id=job_id,
-               best_matching_bytes=max(best,row.get('matching_bytes',-1)))
+    if count_attempt and key not in seen:seen.append(key)
+    row.update(attempt_keys=seen,**attempt_stats(prior,row.get('matching_bytes',-1),row['exact_match'],count_attempt,job_id))
     state[function_id]=row;save(state_path,state);save(folder/'report.json',row)
     return row
 
@@ -218,7 +220,10 @@ def dispatch(function,profile,root,ndk,job_id,revalidate=False):
     import urllib.request,base64
     sources={f'src/{function}.cpp':(root/f'src/{function}.cpp').read_text(),'include/game.hpp':(root/'include/game.hpp').read_text()}
     request=urllib.request.Request(url+'/build',data=json.dumps({'function':function,'profile':profile,'job_id':job_id,'sources':sources,'revalidate':revalidate}).encode(),headers={'Content-Type':'application/json'})
-    with urllib.request.urlopen(request,timeout=100) as response:output=json.load(response)
+    try:
+        with urllib.request.urlopen(request,timeout=100) as response:output=json.load(response)
+    except urllib.error.HTTPError as error:
+        raise ValueError(json.load(error).get('error','Compiler service rejected request')) from error
     if output.get('error'):raise ValueError(output['error'])
     code=base64.b64decode(output.pop('candidate_b64'))
     cfg=json.loads((root/'config/pilot.json').read_text());fn=next(f for f in cfg['functions'] if f['id']==function)
