@@ -200,6 +200,11 @@ def report(root=ROOT):
     root=Path(root);cfg=json.loads((root/'config/pilot.json').read_text())
     state=json.loads((root/'build/state.json').read_text()) if (root/'build/state.json').exists() else {}
     functions=[{k:v for k,v in state.get(f['id'],{'id':f['id'],'status':'not_run','exact_match':False}).items() if k!='attempt_keys'} for f in cfg['functions']]
+    for fn,row in zip(cfg['functions'],functions):
+        files={f"src/{fn['id']}.cpp":(root/f"src/{fn['id']}.cpp").read_text(),'include/game.hpp':(root/'include/game.hpp').read_text()}
+        current=hashlib.sha256(json.dumps(files,sort_keys=True).encode()).hexdigest()
+        if row.get('source_sha256') and row['source_sha256']!=current:
+            row.update(status='not_run',exact_match=False,error='Candidate/header changed; revalidation required')
     return {'target_sha256':cfg['apk_sha256'],'repository_url':'https://github.com/mitch030504/tabletroopers-decomp','pilot_functions':len(functions),
             'matched_functions':sum(bool(f.get('exact_match')) for f in functions),'matched_bytes':sum(f.get('target_bytes',0) for f in functions if f.get('exact_match')),
             'functions':functions,'scope':'Three-function pilot, not whole-game progress','semantic_verification':False}
