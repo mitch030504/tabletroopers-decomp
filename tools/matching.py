@@ -147,6 +147,8 @@ def compare(target,candidate):
 
 def attempt_stats(prior,matching_bytes,exact,count_attempt,job_id):
     best=prior.get('best_matching_bytes',-1)
+    if not count_attempt:
+        return {k:prior.get(k,default) for k,default in (('attempts',0),('non_improving_attempts',0),('job_id',job_id),('best_matching_bytes',matching_bytes))}
     failures=prior.get('non_improving_attempts',0) if prior.get('job_id')==job_id else 0
     if count_attempt:failures=0 if matching_bytes>best or exact else failures+1
     return {'attempts':prior.get('attempts',0)+int(count_attempt),'non_improving_attempts':failures,

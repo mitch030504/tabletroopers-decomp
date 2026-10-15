@@ -33,7 +33,8 @@ class MatchingTests(unittest.TestCase):
         self.assertEqual(prior['attempts'],25);self.assertEqual(prior['non_improving_attempts'],25)
         self.assertEqual(m.attempt_stats(prior,10,False,False,'job'),prior)
         self.assertEqual(m.attempt_stats(prior,11,False,True,'job')['non_improving_attempts'],0)
-        self.assertEqual(m.attempt_stats(prior,10,False,False,'new-job')['non_improving_attempts'],0)
+        self.assertEqual(m.attempt_stats(prior,10,False,False,'snapshot-other-job'),prior)
+        self.assertEqual(m.attempt_stats(prior,10,False,True,'new-job')['non_improving_attempts'],1)
 
     def test_failed_build_is_not_a_successful_ninja_target(self):
         from unittest.mock import patch
